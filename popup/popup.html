@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeBeauty - 代码美化器</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🎨 CodeBeauty</h1>
+      <p class="subtitle">一键美化代码块</p>
+    </div>
+
+    <!-- Main Actions -->
+    <div class="actions">
+      <button id="beautifyAll" class="btn btn-primary">
+        <span class="icon">✨</span>
+        美化所有代码
+      </button>
+      <button id="exportCurrent" class="btn btn-secondary">
+        <span class="icon">📸</span>
+        导出当前
+      </button>
+    </div>
+
+    <!-- Settings -->
+    <div class="settings">
+      <div class="setting-row">
+        <label>主题</label>
+        <select id="themeSelect">
+          <option value="monokai">Monokai</option>
+          <option value="github">GitHub Light</option>
+          <option value="dracula">Dracula</option>
+          <option value="nord">Nord</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>字号</label>
+        <select id="fontSizeSelect">
+          <option value="12">12px</option>
+          <option value="14" selected>14px</option>
+          <option value="16">16px</option>
+          <option value="18">18px</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>行号</label>
+        <input type="checkbox" id="lineNumbers" checked>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-value" id="codeBlockCount">0</span>
+        <span class="stat-label">代码块</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="beautifiedCount">0</span>
+        <span class="stat-label">已美化</span>
+      </div>
+    </div>
+
+    <!-- Pro CTA -->
+    <div class="pro-cta">
+      <p>⭐ 解锁20+高级主题和批量导出</p>
+      <button class="btn btn-pro" id="upgradeBtn">
+        升级到Pro - $5/月
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <a href="#" id="helpBtn">帮助</a>
+      <a href="#" id="feedbackBtn">反馈</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

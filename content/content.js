@@ -1,0 +1,199 @@
+// Content Script - 在网页中运行
+(function() {
+  'use strict';
+
+  // 统计
+  let stats = {
+    total: 0,
+    beautified: 0
+  };
+
+  // 初始化
+  function init() {
+    countCodeBlocks();
+    setupMessageListener();
+  }
+
+  // 统计代码块数量
+  function countCodeBlocks() {
+    const codeBlocks = document.querySelectorAll('pre, code');
+    stats.total = codeBlocks.length;
+  }
+
+  // 设置消息监听
+  function setupMessageListener() {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      switch (request.action) {
+        case 'beautifyAll':
+          beautifyAllCode(request.settings);
+          sendResponse({ success: true, count: stats.beautified });
+          break;
+        case 'exportCurrent':
+          exportCurrentCode(request.settings);
+          sendResponse({ success: true });
+          break;
+        case 'getStats':
+          sendResponse(stats);
+          break;
+      }
+      return true;
+    });
+  }
+
+  // 美化所有代码
+  function beautifyAllCode(settings) {
+    const codeBlocks = document.querySelectorAll('pre, code');
+    stats.beautified = 0;
+
+    codeBlocks.forEach((block, index) => {
+      if (!block.hasAttribute('data-beautified')) {
+        beautifyCodeBlock(block, settings, index);
+        stats.beautified++;
+      }
+    });
+  }
+
+  // 美化单个代码块
+  function beautifyCodeBlock(block, settings, index) {
+    // 标记已美化
+    block.setAttribute('data-beautified', 'true');
+
+    // 包装容器
+    const wrapper = document.createElement('div');
+    wrapper.className = `codebeauty-wrapper theme-${settings.theme}`;
+    wrapper.setAttribute('data-font-size', settings.fontSize);
+
+    // 创建工具栏
+    const toolbar = createToolbar(settings);
+    wrapper.appendChild(toolbar);
+
+    // 克隆代码块
+    const clonedBlock = block.cloneNode(true);
+    clonedBlock.className = `codebeauty-code language-${detectLanguage(block)}`;
+
+    // 添加行号
+    if (settings.lineNumbers) {
+      addLineNumbers(clonedBlock);
+    }
+
+    wrapper.appendChild(clonedBlock);
+
+    // 替换原始代码块
+    block.parentNode.replaceChild(wrapper, block);
+
+    // 应用语法高亮
+    if (typeof Prism !== 'undefined') {
+      Prism.highlightElement(clonedBlock);
+    }
+  }
+
+  // 创建工具栏
+  function createToolbar(settings) {
+    const toolbar = document.createElement('div');
+    toolbar.className = 'codebeauty-toolbar';
+
+    // 语言标签
+    const langLabel = document.createElement('span');
+    langLabel.className = 'codebeauty-lang';
+    langLabel.textContent = 'Code';
+    toolbar.appendChild(langLabel);
+
+    // 右侧按钮
+    const buttons = document.createElement('div');
+    buttons.className = 'codebeauty-buttons';
+
+    // 复制按钮
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'codebeauty-btn';
+    copyBtn.textContent = '复制';
+    copyBtn.onclick = function() {
+      copyCode(this);
+    };
+    buttons.appendChild(copyBtn);
+
+    // 导出按钮
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'codebeauty-btn';
+    exportBtn.textContent = '导出';
+    exportBtn.onclick = function() {
+      exportCode(this);
+    };
+    buttons.appendChild(exportBtn);
+
+    toolbar.appendChild(buttons);
+
+    return toolbar;
+  }
+
+  // 检测编程语言
+  function detectLanguage(block) {
+    const className = block.className || '';
+    const match = className.match(/language-(\w+)/);
+    return match ? match[1] : 'javascript';
+  }
+
+  // 添加行号
+  function addLineNumbers(block) {
+    const code = block.textContent;
+    const lines = code.split('\n');
+    const lineNumbersWrapper = document.createElement('span');
+    lineNumbersWrapper.className = 'line-numbers-rows';
+
+    lines.forEach((_, index) => {
+      const lineNumber = document.createElement('span');
+      lineNumber.textContent = index + 1;
+      lineNumbersWrapper.appendChild(lineNumber);
+    });
+
+    block.classList.add('line-numbers');
+    block.appendChild(lineNumbersWrapper);
+  }
+
+  // 复制代码
+  function copyCode(button) {
+    const wrapper = button.closest('.codebeauty-wrapper');
+    const code = wrapper.querySelector('.codebeauty-code').textContent;
+
+    navigator.clipboard.writeText(code).then(() => {
+      const originalText = button.textContent;
+      button.textContent = '已复制!';
+
+      setTimeout(() => {
+        button.textContent = originalText;
+      }, 2000);
+    });
+  }
+
+  // 导出代码
+  function exportCode(button) {
+    const wrapper = button.closest('.codebeauty-wrapper');
+
+    // 使用html2canvas导出
+    if (typeof html2canvas !== 'undefined') {
+      html2canvas(wrapper, {
+        backgroundColor: null,
+        scale: 2
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `code-${Date.now()}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    } else {
+      alert('导出功能正在加载...');
+    }
+  }
+
+  // 导出当前代码
+  function exportCurrentCode(settings) {
+    const codeBlocks = document.querySelectorAll('.codebeauty-wrapper');
+    if (codeBlocks.length > 0) {
+      exportCode(codeBlocks[0]);
+    } else {
+      alert('请先美化代码');
+    }
+  }
+
+  // 初始化
+  init();
+})();

@@ -1,0 +1,293 @@
+/* Content Script样式 - 注入到网页 */
+
+/* 代码块容器 */
+.codebeauty-wrapper {
+  position: relative;
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+  max-width: 100%;
+}
+
+/* 工具栏 */
+.codebeauty-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+}
+
+.codebeauty-lang {
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.codebeauty-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.codebeauty-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #667eea;
+  color: white;
+  transition: all 0.2s;
+}
+
+.codebeauty-btn:hover {
+  background: #764ba2;
+  transform: translateY(-1px);
+}
+
+.codebeauty-btn:active {
+  transform: translateY(0);
+}
+
+/* 代码块 */
+.codebeauty-code {
+  display: block;
+  padding: 16px;
+  overflow-x: auto;
+  line-height: 1.6;
+  position: relative;
+}
+
+/* 字号 */
+.codebeauty-wrapper[data-font-size="12"] .codebeauty-code {
+  font-size: 12px;
+}
+
+.codebeauty-wrapper[data-font-size="14"] .codebeauty-code {
+  font-size: 14px;
+}
+
+.codebeauty-wrapper[data-font-size="16"] .codebeauty-code {
+  font-size: 16px;
+}
+
+.codebeauty-wrapper[data-font-size="18"] .codebeauty-code {
+  font-size: 18px;
+}
+
+/* 行号 */
+.line-numbers .line-numbers-rows {
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 40px;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  padding-right: 8px;
+  text-align: right;
+  color: rgba(0, 0, 0, 0.3);
+  font-size: 0.9em;
+  line-height: 1.6;
+  user-select: none;
+  pointer-events: none;
+}
+
+.line-numbers .line-numbers-rows span {
+  display: block;
+}
+
+.line-numbers {
+  padding-left: 50px !important;
+}
+
+/* 主题 - Monokai */
+.theme-monokai {
+  background: #272822;
+}
+
+.theme-monokai .codebeauty-toolbar {
+  background: #1e1f1a;
+  border-bottom-color: #3e3d32;
+}
+
+.theme-monokai .codebeauty-lang {
+  color: #f8f8f2;
+}
+
+.theme-monokai .codebeauty-code {
+  color: #f8f8f2;
+}
+
+.theme-monokai .line-numbers-rows {
+  border-right-color: #3e3d32;
+  color: #75715e;
+}
+
+/* 主题 - GitHub Light */
+.theme-github {
+  background: #ffffff;
+  border: 1px solid #e1e4e8;
+}
+
+.theme-github .codebeauty-toolbar {
+  background: #f6f8fa;
+  border-bottom-color: #e1e4e8;
+}
+
+.theme-github .codebeauty-code {
+  color: #24292e;
+}
+
+.theme-github .line-numbers-rows {
+  border-right-color: #e1e4e8;
+  color: #1b1f23;
+}
+
+/* 主题 - Dracula */
+.theme-dracula {
+  background: #282a36;
+}
+
+.theme-dracula .codebeauty-toolbar {
+  background: #21222c;
+  border-bottom-color: #44475a;
+}
+
+.theme-dracula .codebeauty-lang {
+  color: #f8f8f2;
+}
+
+.theme-dracula .codebeauty-code {
+  color: #f8f8f2;
+}
+
+.theme-dracula .line-numbers-rows {
+  border-right-color: #44475a;
+  color: #6272a4;
+}
+
+/* 主题 - Nord */
+.theme-nord {
+  background: #2e3440;
+}
+
+.theme-nord .codebeauty-toolbar {
+  background: #3b4252;
+  border-bottom-color: #4c566a;
+}
+
+.theme-nord .codebeauty-lang {
+  color: #d8dee9;
+}
+
+.theme-nord .codebeauty-code {
+  color: #d8dee9;
+}
+
+.theme-nord .line-numbers-rows {
+  border-right-color: #4c566a;
+  color: #4c566a;
+}
+
+/* 语法高亮（Prism.js基础样式） */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #6a9955;
+}
+
+.token.punctuation {
+  color: #d4d4d4;
+}
+
+.token.namespace {
+  opacity: 0.7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #b5cea8;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #ce9178;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #d4d4d4;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #c586c0;
+}
+
+.token.function,
+.token.class-name {
+  color: #dcdcaa;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #d16969;
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+.token.entity {
+  cursor: help;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .codebeauty-wrapper {
+    margin: 12px 0;
+    border-radius: 6px;
+  }
+
+  .codebeauty-toolbar {
+    padding: 6px 12px;
+  }
+
+  .codebeauty-code {
+    padding: 12px;
+  }
+
+  .line-numbers .line-numbers-rows {
+    width: 30px;
+    padding-right: 6px;
+  }
+
+  .line-numbers {
+    padding-left: 40px !important;
+  }
+}
