@@ -18,6 +18,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.tabs.create({
       url: chrome.runtime.getURL('popup/popup.html')
     });
+    sendResponse({ success: true });
+  } else if (request.action === 'loadHtml2Canvas') {
+    // 动态注入html2canvas到content script
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      if (tabs[0]) {
+        chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+          files: ['lib/html2canvas.js']
+        }, function() {
+          sendResponse({ loaded: true });
+        });
+      } else {
+        sendResponse({ loaded: false });
+      }
+    });
+    return true; // 保持消息通道开启
   }
   return true;
 });

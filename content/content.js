@@ -211,17 +211,11 @@
   function exportCode(button) {
     const wrapper = button.closest('.codebeauty-wrapper');
 
-    // 检查html2canvas是否加载
-    if (typeof html2canvas === 'undefined') {
-      // 动态加载html2canvas
-      const script = document.createElement('script');
-      script.src = chrome.runtime.getURL('lib/html2canvas.js');
-      script.onload = function() {
-        doExport(wrapper);
-      };
-      document.head.appendChild(script);
-    } else {
+    // html2canvas已经在manifest中加载，直接使用
+    if (typeof html2canvas !== 'undefined') {
       doExport(wrapper);
+    } else {
+      alert('导出功能正在加载，请稍后再试...');
     }
   }
 

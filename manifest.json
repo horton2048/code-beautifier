@@ -23,7 +23,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["lib/prism.js", "content/content.js"],
+      "js": ["lib/prism.js", "lib/html2canvas.js", "content/content.js"],
       "css": ["content/content.css"],
       "run_at": "document_end"
     }
