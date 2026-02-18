@@ -8,6 +8,13 @@
     beautified: 0
   };
 
+  // 当前设置
+  let currentSettings = {
+    theme: 'monokai',
+    fontSize: '14',
+    lineNumbers: true
+  };
+
   // 初始化
   function init() {
     countCodeBlocks();
@@ -25,8 +32,14 @@
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       switch (request.action) {
         case 'beautifyAll':
+          currentSettings = request.settings;
           beautifyAllCode(request.settings);
           sendResponse({ success: true, count: stats.beautified });
+          break;
+        case 'reapplyTheme':
+          currentSettings = request.settings;
+          reapplyTheme(request.settings);
+          sendResponse({ success: true });
           break;
         case 'exportCurrent':
           exportCurrentCode(request.settings);
@@ -49,6 +62,36 @@
       if (!block.hasAttribute('data-beautified')) {
         beautifyCodeBlock(block, settings, index);
         stats.beautified++;
+      }
+    });
+  }
+
+  // 重新应用主题
+  function reapplyTheme(settings) {
+    const wrappers = document.querySelectorAll('.codebeauty-wrapper');
+    wrappers.forEach(wrapper => {
+      // 移除旧主题类
+      wrapper.className = wrapper.className.replace(/theme-\w+/g, '');
+      // 添加新主题类
+      wrapper.classList.add(`theme-${settings.theme}`);
+      
+      // 更新字体大小
+      wrapper.setAttribute('data-font-size', settings.fontSize);
+      
+      // 更新行号
+      const codeBlock = wrapper.querySelector('.codebeauty-code');
+      if (codeBlock) {
+        // 移除旧行号
+        const oldLineNumbers = codeBlock.querySelector('.line-numbers-rows');
+        if (oldLineNumbers) {
+          oldLineNumbers.remove();
+        }
+        codeBlock.classList.remove('line-numbers');
+        
+        // 添加新行号
+        if (settings.lineNumbers) {
+          addLineNumbers(codeBlock);
+        }
       }
     });
   }
@@ -168,27 +211,60 @@
   function exportCode(button) {
     const wrapper = button.closest('.codebeauty-wrapper');
 
-    // 使用html2canvas导出
-    if (typeof html2canvas !== 'undefined') {
-      html2canvas(wrapper, {
-        backgroundColor: null,
-        scale: 2
-      }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `code-${Date.now()}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
-      });
+    // 检查html2canvas是否加载
+    if (typeof html2canvas === 'undefined') {
+      // 动态加载html2canvas
+      const script = document.createElement('script');
+      script.src = chrome.runtime.getURL('lib/html2canvas.js');
+      script.onload = function() {
+        doExport(wrapper);
+      };
+      document.head.appendChild(script);
     } else {
-      alert('导出功能正在加载...');
+      doExport(wrapper);
     }
+  }
+
+  // 执行导出
+  function doExport(wrapper) {
+    // 添加临时的导出类以优化样式
+    wrapper.classList.add('exporting');
+    
+    html2canvas(wrapper, {
+      backgroundColor: null,
+      scale: 2,
+      logging: false,
+      useCORS: true,
+      allowTaint: true
+    }).then(canvas => {
+      // 移除导出类
+      wrapper.classList.remove('exporting');
+      
+      // 创建下载链接
+      const link = document.createElement('a');
+      link.download = `code-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      // 显示成功提示
+      const exportBtn = wrapper.querySelector('.codebeauty-btn:nth-child(2)');
+      const originalText = exportBtn.textContent;
+      exportBtn.textContent = '✓已导出';
+      setTimeout(() => {
+        exportBtn.textContent = originalText;
+      }, 2000);
+    }).catch(error => {
+      console.error('导出失败:', error);
+      wrapper.classList.remove('exporting');
+      alert('导出失败: ' + error.message);
+    });
   }
 
   // 导出当前代码
   function exportCurrentCode(settings) {
     const codeBlocks = document.querySelectorAll('.codebeauty-wrapper');
     if (codeBlocks.length > 0) {
-      exportCode(codeBlocks[0]);
+      exportCode(codeBlocks[0].querySelector('.codebeauty-btn:nth-child(2)'));
     } else {
       alert('请先美化代码');
     }

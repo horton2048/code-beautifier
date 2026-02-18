@@ -85,10 +85,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // 设置变更时保存
-  themeSelect.addEventListener('change', saveSettings);
-  fontSizeSelect.addEventListener('change', saveSettings);
-  lineNumbersCheckbox.addEventListener('change', saveSettings);
+  // 设置变更时保存并实时应用
+  themeSelect.addEventListener('change', async function() {
+    saveSettings();
+    await reapplySettings();
+  });
+
+  fontSizeSelect.addEventListener('change', async function() {
+    saveSettings();
+    await reapplySettings();
+  });
+
+  lineNumbersCheckbox.addEventListener('change', async function() {
+    saveSettings();
+    await reapplySettings();
+  });
+
+  // 重新应用设置到已美化的代码
+  async function reapplySettings() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      await chrome.tabs.sendMessage(tab.id, {
+        action: 'reapplyTheme',
+        settings: getSettings()
+      });
+    } catch (error) {
+      console.error('应用设置失败:', error);
+    }
+  }
 
   // 升级按钮
   upgradeBtn.addEventListener('click', function() {
